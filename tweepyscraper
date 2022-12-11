@@ -1,0 +1,43 @@
+# A program that fetches tweets in chosen topic from last seven days, cleanes it and stores it in a dictionary
+# Extract data from the dictionary and store it in a pandas dataframe
+# Write dataframe to csv for further analysis (popular words used within that topic)
+
+import tweepy
+import requests
+import pandas as pd
+
+consumer_key = "consumer_key"
+consumer_secret = "consumer_secret"
+access_token = "access_token-gXyW26KvVd1PjqOeEv4VwVMZqPMEjb"
+access_token_secret = "access_token_secret"
+bearer_token = "bearer_token" 
+# Info is from Twitter Developer platform, basic access is sufficient
+
+client = tweepy.Client(bearer_token=bearer_token,
+                       consumer_key=consumer_key,
+                       consumer_secret=consumer_secret,
+                       access_token=access_token,
+                       access_token_secret=access_token_secret,
+                       return_type=requests.Response,
+                       wait_on_rate_limit=True)
+ml_topic=input("Type in the money laundering related keyword here: ")
+
+# Define query
+# Get the topic with #topic, exclude all retweets, english language
+query = ml_topic+ ' -is:retweet lang:en'
+
+# get max. 100 tweets
+tweets = client.search_recent_tweets(query=query,
+                                     tweet_fields=['author_id', 'created_at'],
+                                     max_results=100)
+
+# Save data as dictionary
+tweets_dict = tweets.json()
+
+# Extract "data" value from dictionary
+tweets_data = tweets_dict['data']
+
+# Transform to pandas Dataframe
+df = pd.json_normalize(tweets_data)
+# Create csv file from Dataframe
+df.to_csv("ml.csv")
